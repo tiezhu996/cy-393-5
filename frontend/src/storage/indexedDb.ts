@@ -30,7 +30,16 @@ export async function loadFiles(): Promise<MindMapFile[]> {
 
 export async function saveFile(file: MindMapFile): Promise<void> {
   const db: IDBDatabase = await openDb();
-  db.transaction(STORE, "readwrite").objectStore(STORE).put(file);
+  const cleanFile: MindMapFile = cloneForStorage(file);
+  db.transaction(STORE, "readwrite").objectStore(STORE).put(cleanFile);
+}
+
+function cloneForStorage<T>(value: T): T {
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch (e) {
+    return structuredClone(value);
+  }
 }
 
 export async function deleteFile(id: string): Promise<void> {

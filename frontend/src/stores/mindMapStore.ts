@@ -122,7 +122,8 @@ function mutateFile(set: SetState, get: GetState, id: string, recipe: (file: Min
     if (!file) return;
     recipe(file);
     file.updatedAt = new Date().toISOString();
-    saveFile(file);
   });
+  const savedFile: MindMapFile | undefined = files.find((item: MindMapFile) => item.id === id);
+  if (savedFile) saveFile(savedFile);
   set({ files, history: [...get().history, previous], future: [] });
 }
