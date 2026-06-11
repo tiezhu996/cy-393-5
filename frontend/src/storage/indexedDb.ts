@@ -1,31 +1,39 @@
 import type { MindMapFile } from "../types/mindmap";
 
-const DB_NAME = "mindmap-editor-db";
-const STORE = "files";
+const DB_NAME: string = "mindmap-editor-db";
+const STORE: string = "files";
 
 function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: "id" });
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+  return new Promise<IDBDatabase>((resolve: (value: IDBDatabase) => void, reject: (reason?: Event | DOMException | null) => void): void => {
+    const req: IDBOpenDBRequest = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (): void => {
+      req.result.createObjectStore(STORE, { keyPath: "id" });
+    };
+    req.onsuccess = (): void => {
+      resolve(req.result);
+    };
+    req.onerror = (): void => {
+      reject(req.error);
+    };
   });
 }
 
 export async function loadFiles(): Promise<MindMapFile[]> {
-  const db = await openDb();
-  return new Promise((resolve) => {
-    const req = db.transaction(STORE).objectStore(STORE).getAll();
-    req.onsuccess = () => resolve(req.result as MindMapFile[]);
+  const db: IDBDatabase = await openDb();
+  return new Promise<MindMapFile[]>((resolve: (value: MindMapFile[]) => void): void => {
+    const req: IDBRequest<MindMapFile[]> = db.transaction(STORE).objectStore(STORE).getAll();
+    req.onsuccess = (): void => {
+      resolve(req.result as MindMapFile[]);
+    };
   });
 }
 
-export async function saveFile(file: MindMapFile) {
-  const db = await openDb();
+export async function saveFile(file: MindMapFile): Promise<void> {
+  const db: IDBDatabase = await openDb();
   db.transaction(STORE, "readwrite").objectStore(STORE).put(file);
 }
 
-export async function deleteFile(id: string) {
-  const db = await openDb();
+export async function deleteFile(id: string): Promise<void> {
+  const db: IDBDatabase = await openDb();
   db.transaction(STORE, "readwrite").objectStore(STORE).delete(id);
 }
